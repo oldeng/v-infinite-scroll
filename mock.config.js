@@ -1,34 +1,30 @@
-module.exports = {
-    //使用mock生成数据
-    '/test1': {
-        "string|1-10": "★"
-    },
-    '/test2': {
-        "string|1-10": "★a*"
-    },
-    //使用回调函数形式手动返回数据
-    '/commentList': function (req, res, next, Mock) {
-        //手动调用Mockjs生成数据
-        //const Mock = require('mock');
-        const query = req.query;
-        console.log(query.pageNum, query.pageSize);
 
-        res.json(Mock.mock({
-            code:1,
-            msg:'success',
-            data: {
-                total: 20,
-                pageNum: parseInt(query.pageNum),
-                pageSize: parseInt(query.pageSize),
-                'list|0-5': [
-                    {
-                        nickname: Mock.Random.cname(),
-                        icon: Mock.Random.image('45x45', Mock.Random.color(), '#FFF', Mock.Random.cname()),
-                        time: Mock.Random.date('yyyy-MM-dd hh:mm:ss'),
-                        content: Mock.Random.cparagraph()
-                    }
-                ]
+let rowNum = 1;
+module.exports = {
+    '/list': function (req, res, next, Mock) {
+        
+        res.json(function () {
+            let data = [];
+            console.log("开始获取数据");
+            for (let i = 0; i < 5; i++) {
+              let row = [];
+              let railway = Mock.mock({
+                'type|1': ['K', 'G', 'C', 'D', 'T', 'X'],
+                'id': Mock.Random.integer(0, 10000)+''
+              });
+              row[0] = rowNum++;
+              row[1] = railway.type+railway.id;
+              row[2] = Mock.Random.city();
+              row[3] = Mock.Random.city();
+              row[4] = Mock.Random.date('HH:mm:ss');
+              row[5] = Mock.Random.date('HH:mm:ss');
+              row[6] = Mock.mock({
+                'state|1': ['检票', '晚点', '准点', '停运']
+              }).state
+              rowNum++;
+              data.push(row);
             }
-        }))
+            return data;
+        } ());
     }
 }

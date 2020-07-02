@@ -1,13 +1,13 @@
 <template>
-  <div class="demo">
+  <div class="v-infinite-scroll">
     <transition-group class="container" name="list-complete" tag="div">
-      <div ref="list1" key="swipper-left" class="swipper-item swipper-left" style="top: 0px;">
-        <div v-for="row in body1" class="list-complete-item">
+      <div ref="up" key="scroll-up" :class="['scroll-item', 'scroll-up', animateClss]">
+        <div ref="list-item" v-for="row in list" class="list-complete-item">
           <slot name="up" v-bind:up="row"></slot>
         </div>
       </div>
-      <div ref="list2" key="swiper-right" class="swipper-item swipper-right" style="top: 300px;">
-        <div v-for="row in body2" class="list-complete-item">
+      <div ref="down" key="scroll-down" :class="['scroll-item', 'scroll-down', animateClss]">
+        <div ref="list-item" v-for="row in listCopy" class="list-complete-item">
           <slot name="down" v-bind:down="row"></slot>
         </div>
       </div>
@@ -15,235 +15,313 @@
   </div>
 </template>
 <script>
-let rowNum = 6;
-    async function fetch(count) {
-      let data = [];
-      console.log('开始获取数据');
-      for (let i = 0; i < count; i++) {
-        let row = [];
-        for (let j = 0; j < 3; j++) {
-          row[j] = `r-${rowNum}-c-${j}`;
-        }
-        rowNum++;
-        data.push(row);
-      }
-
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          resolve(data);
-          console.log('获取数据为',data);
-        }, 1000)
-      });
-    }
 export default {
   data() {
     return {
-      body1: [
-        [
-          'r1-c1', 'r1-c2', 'r1-c3'
-        ],
-        [
-          'r2-c1', 'r2-c2', 'r2-c3'
-        ],
-        [
-          'r3-c1', 'r3-c2', 'r2-c3'
-        ],
-        [
-          'r4-c1', 'r4-c2', 'r4-c3'
-        ],
-        [
-          'r5-c1', 'r5-c2', 'r5-c3'
-        ]
-      ],
-      body2: [
-        [
-          'r1-c1', 'r1-c2', 'r1-c3'
-        ],
-        [
-          'r2-c1', 'r2-c2', 'r2-c3'
-        ],
-        [
-          'r3-c1', 'r3-c2', 'r2-c3'
-        ],
-        [
-          'r4-c1', 'r4-c2', 'r4-c3'
-        ],
-        [
-          'r5-c1', 'r5-c2', 'r5-c3'
-        ]
-      ],
+      list: [],
+      listCopy: [],
       cache: [],
-      nextNum: 10,
-      switch: false,
-      counter: 6,
+      switch: false
     };
   },
   props: {
     isStart: {
       type: [String, Boolean],
-      default: false,
-    }
+      default: false
+    },
+    row: {
+      type: Number,
+      default: 5
+    },
+    col: {
+      type: Number,
+      default: 5
+    },
+    maxCache: {
+      type: Number,
+      default: 15
+    },
+    direction: {
+      type: String,
+      default: "vertical"
+    },
+    interval: {
+      type:Number,
+      default: 1500
+    },
+  },
+  computed: {
+    animateClss () {
+      return this.direction === 'horizontal' ? 'scroll-item-horizontal' : 'scroll-item-vertical';
+    },
   },
   watch: {
-    isStart (newVal, oldVal) {
+    isStart(newVal, oldVal) {
       this.switch = newVal;
     }
   },
-  computed: {
-
-  },
-  created () {
+  created() {
     this.switch = this.isStart;
   },
   methods: {
-    catchData () {
-      this.cacheTimer = setInterval(async () => {
-        if(this.cache.length <= 10) {
-          
-          let data = await fetch(5).then(data => {
-            return data;
-          }).catch(err => {
-
-          });
-          this.cache.splice(this.cache.length, data.lenth, ...data);
-          console.log('cache==>', this.cache);
+    catchData(data) {
+      //当缓存数据过小加载数据
+      if (!this.inited) {
+          this.init();
         }
-      }, 2000)
+      if (this.cache.length <= this.maxCache) {
+        this.cache.splice(this.cache.length, data.lenth, ...data);
+        console.log("cache==>", this.cache);
+      }
     },
-    start () {
+    start() {
       this.switch = !this.switch;
     },
-    stop () {},
-    move () {
-
-      if (!this.switch) {
+    init() {
+      if (this.cache.length >= this.row) {
+        console.log('初始化列表');
+        //修改数据使列表重新渲染
+        this.list = this.cache.splice(0, this.row);
+        this.listCopy = this.list.slice();
+        //是否初始化
+        this.inited = true;
+      }
+    },
+    stop() {
+      //TODO
+    },
+    move() {
+      if (this.direction === "horizontal") {
+        this.horizonMove();
+      } else {
+        this.verticalMove();
+      }
+    },
+    horizonMove() {
+      console.log("水平方向滚动");
+      if (
+        !this.switch ||
+        this.list.length < this.col ||
+        this.listCopy.length < this.col
+      ) {
         return;
       }
-      let list1 = this.$refs['list1'];
-      let list2 = this.$refs['list2'];
+      //上半部分
+      let up = this.$refs["up"];
+      //下半部分
+      let down = this.$refs["down"];
 
-      let top1 = parseInt(list1.style.top);
-      let top2 = parseInt(list2.style.top);
+      let upLeft = parseInt(up.style.left);
+      let downLeft = parseInt(down.style.left);
 
-      top1= top1 - 60;
-      top2 = top2 - 60;
-
-      if (top1 < -300) {
-         list1.style.top = '300px';
-        // list1.style.visibility = 'hidden';
+      upLeft = upLeft - this.itemWidth;
+      downLeft = downLeft - this.itemWidth;
+      debugger;
+      if (upLeft < -this.width) {
+        up.style.left = `${this.width}px`;
       } else {
-        list1.style.top = top1 + 'px';
-        list1.style.visibility = 'visible';
-        if (top1 === -300) {
+        up.style.left = upLeft + "px";
+        up.style.visibility = "visible";
+        if (upLeft === -this.width) {
           //延时等待transition 执行完成再list的调整位置
           setTimeout(() => {
-            list1.style.top = '300px';
-            list1.style.visibility = 'hidden';
+            up.style.left = `${this.width}px`;
+            up.style.visibility = "hidden";
             //执行更行数据
-            console.log('list1 -->this', this);
             //当缓存中有多余的数据时修改数据
-            if (this.cache.length >= 5) {
-                //修改数据使列表重新渲染
-                this.body1 = this.cache.splice(0, 5);
+            if (this.cache.length > 0) {
+              //修改数据使列表重新渲染
+              this.list = this.cache.splice(0, this.col);
             }
-             
+            //修改时间可能有问题
           }, 300);
         }
       }
 
-      if (top2 < -300) {
-         list2.style.top = '300px';
-        //  list2.style.visibility = 'hidden';
+      if (downLeft < -this.width) {
+        down.style.left = `${this.width}px`;
       } else {
-        list2.style.top = top2 + 'px';
-        list2.style.visibility = 'visible';
-        if (top2 === -300) {
+        down.style.left = downLeft + "px";
+        down.style.visibility = "visible";
+        if (downLeft === -this.width) {
           setTimeout(() => {
-            list2.style.top = '300px';
-            list2.style.visibility = 'hidden';
+            down.style.left = `${this.width}px`;
+            down.style.visibility = "hidden";
             //执行更行数据\
-            console.log('list2 -->this', this);
-            if (this.cache.length >= 5) {
-              this.body2 = this.cache.splice(0, 5);
+            if (this.cache.length > 0) {
+              this.listCopy = this.cache.splice(0, this.col);
             }
-             
-          }, 300)
+          }, 300);
         }
+      }
+    },
+    verticalMove() {
+      if (
+        !this.switch ||
+        this.list.length < this.row ||
+        this.listCopy.length < this.row
+      ) {
+        return;
+      }
+      //上半部分
+      let up = this.$refs["up"];
+      //下半部分
+      let down = this.$refs["down"];
+
+      let top1 = parseInt(up.style.top);
+      let top2 = parseInt(down.style.top);
+
+      top1 = top1 - this.itemHeight;
+      top2 = top2 - this.itemHeight;
+
+      if (top1 < -this.height) {
+        up.style.top = `${this.height}px`;
+      } else {
+        up.style.top = top1 + "px";
+        up.style.visibility = "visible";
+        if (top1 === -this.height) {
+          //延时等待transition 执行完成再list的调整位置
+          setTimeout(() => {
+            up.style.top = `${this.height}px`;
+            up.style.visibility = "hidden";
+            //执行更行数据
+            //当缓存中有多余的数据时修改数据
+            if (this.cache.length > 0) {
+              //修改数据使列表重新渲染
+              this.list = this.cache.splice(0, this.row);
+            }
+            //修改时间可能有问题
+          }, 300);
+        }
+      }
+
+      if (top2 < -this.height) {
+        down.style.top = `${this.height}px`;
+      } else {
+        down.style.top = top2 + "px";
+        down.style.visibility = "visible";
+        if (top2 === -this.height) {
+          setTimeout(() => {
+            down.style.top = `${this.height}px`;
+            down.style.visibility = "hidden";
+            //执行更行数据\
+            if (this.cache.length > 0) {
+              this.listCopy = this.cache.splice(0, this.row);
+            }
+          }, 300);
+        }
+      }
+    },
+    initSize() {
+      //垂直方向滚动
+      if (this.direction === "vertical") {
+        let up = this.$refs["up"];
+        let down = this.$refs["down"];
+        this.height = this.$el.offsetHeight;
+        this.itemHeight = Math.ceil(this.height / this.row);
+        //设置初始列表大小位置
+        up.style.height = this.height + "px";
+        down.style.height = this.height + "px";
+        up.style.top = 0;
+        down.style.top = `${this.height}px`;
+      } else {
+        //水平方向滚动
+        let up = this.$refs["up"];
+        let down = this.$refs["down"];
+        this.height = this.$el.offsetHeight;
+        this.width = this.$el.offsetWidth;
+        this.itemWidth = Math.ceil(this.width / this.col);
+        //设置初始列表大小位置
+        up.style.height = this.height + "px";
+        down.style.height = this.height + "px";
+        up.style.left = 0;
+        down.style.left = `${this.width}px`;
       }
     }
   },
-  mounted () {
+  mounted() {
+    //计算行初始高度
+    this.initSize();
     setInterval(() => {
       this.move();
-
-    }, 4000);
-    this.catchData();
+      //5行时最小时间间隔为800ms
+    }, this.interval);
   },
-  destroyed () {
-    clearInterval(this.cacheTimer);
-    this.cacheTimer = null;
-  }
+  beforeUpdate() {
+    //TODO
+  },
+  updated() {
+    if (this.direction === "horizontal") {
+       this.$refs["list-item"].forEach(item => {
+          item.style.width = `${this.itemWidth}px`;
+          item.style.height = `${this.height}px`;
+          item.style.display = 'inline-block';
+          console.log(this.itemWidth);
+       });
+    } else {
+      this.$refs["list-item"].forEach(item => {
+        item.style.height = `${this.itemHeight}px`;
+        console.log(this.itemHeight);
+      });
+    }
+  },
+  destroyed() {}
 };
-
-
 </script>
 <style lang="less" scopped>
-.demo {
+.v-infinite-scroll {
+  width: 100%;
+  height: 100%;
   .container {
-    // border: 1px solid green;
-    background: gray;
-    width: 300px;
-    height: 300px;
+    // background: gray;
+    width: 100%;
+    height: 100%;
     margin: 0 auto;
     position: relative;
     overflow: hidden;
-
     box-sizing: border-box;
 
-    .swipper-left {
+    .scroll-up {
       position: absolute;
       left: 0;
-      background: red;
+      // background: red;
     }
 
-    .swipper-right {
+    .scroll-down {
       position: absolute;
       left: 0;
-      background: green;
+      // background: green;
     }
 
-    .swipper-item {
-      width: 300px;
-      height: 300px;
+    .scroll-item {
+      width: 100%;
       box-sizing: border-box;
       transition: top 0.5s;
-
+      // transition: left 0.5s;
       .list-complete-item {
-        width: 300px;
-        height: 60px;
         box-sizing: border-box;
         display: block;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border: 1px solid white;
-        color: white;
-
-        .col {
-          width: 100px;
-          height: 60px;
-          box-sizing: border-box;
-          border: 1px solid white;
-        }
+        position: relative;
+        // display: flex;
+        // justify-content: center;
+        // align-items: center;
       }
       .list-complete-enter, .list-complete-leave-to
         /* .list-complete-leave-active for below version 2.1.8 */ {
         opacity: 0;
-        transform: translateY(30px);
+        // transform: translateY(30px);
       }
       .list-complete-leave-active {
         position: absolute;
       }
+    }
+    //水平动画
+    .scroll-item-horizontal {
+      transition: left 0.5s;
+    }
+    //垂直动画
+    .scroll-item-vertical {
+      transition: top 0.5s;
     }
   }
 }
