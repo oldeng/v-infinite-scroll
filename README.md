@@ -76,6 +76,15 @@ Vue.use(VInfoniteScroll)
     </div>
 ```
 
+#调试
+>源码调试需要开启vmock插件模拟接口数据
+
+##运行vmock
+模拟数据服务默认端口为8000
+```
+npm run vmock
+```
+
 #npm地址
 
 [npm传送门](https://github.com/oldeng/v-infinite-scroll)
