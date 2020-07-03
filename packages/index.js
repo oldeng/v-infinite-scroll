@@ -1,11 +1,11 @@
-import Plugin from './src/index.vue';
+import InfiniteScroll from './src/index.vue';
 
 const components = [
-  Plugin
+  InfiniteScroll
 ]
 
-export const  {
-  Plugin: Plugin
+export {
+  InfiniteScroll
 }
 
 const install = function(Vue) {

@@ -16,6 +16,7 @@
 </template>
 <script>
 export default {
+  name: 'v-infinite-scroll',
   data() {
     return {
       list: [],
@@ -46,14 +47,16 @@ export default {
       default: "vertical"
     },
     interval: {
-      type:Number,
+      type: Number,
       default: 1500
-    },
+    }
   },
   computed: {
-    animateClss () {
-      return this.direction === 'horizontal' ? 'scroll-item-horizontal' : 'scroll-item-vertical';
-    },
+    animateClss() {
+      return this.direction === "horizontal"
+        ? "scroll-item-horizontal"
+        : "scroll-item-vertical";
+    }
   },
   watch: {
     isStart(newVal, oldVal) {
@@ -67,24 +70,32 @@ export default {
     catchData(data) {
       //当缓存数据过小加载数据
       if (!this.inited) {
-          this.init();
-        }
+        this.init();
+      }
       if (this.cache.length <= this.maxCache) {
-        this.cache.splice(this.cache.length, data.lenth, ...data);
-        console.log("cache==>", this.cache);
+        this.cache.splice(this.cache.length, data.length, ...data);
       }
     },
     start() {
       this.switch = !this.switch;
     },
     init() {
-      if (this.cache.length >= this.row) {
-        console.log('初始化列表');
-        //修改数据使列表重新渲染
-        this.list = this.cache.splice(0, this.row);
-        this.listCopy = this.list.slice();
-        //是否初始化
-        this.inited = true;
+      if (this.direction === "vertical") {
+        if (this.cache.length >= this.row) {
+          //修改数据使列表重新渲染
+          this.list = this.cache.splice(0, this.row);
+          this.listCopy = this.list.slice();
+          //是否初始化
+          this.inited = true;
+        }
+      } else {
+        if (this.cache.length >= this.col) {
+          //修改数据使列表重新渲染
+          this.list = this.cache.splice(0, this.col);
+          this.listCopy = this.list.slice();
+          //是否初始化
+          this.inited = true;
+        }
       }
     },
     stop() {
@@ -98,7 +109,6 @@ export default {
       }
     },
     horizonMove() {
-      console.log("水平方向滚动");
       if (
         !this.switch ||
         this.list.length < this.col ||
@@ -116,7 +126,6 @@ export default {
 
       upLeft = upLeft - this.itemWidth;
       downLeft = downLeft - this.itemWidth;
-      debugger;
       if (upLeft < -this.width) {
         up.style.left = `${this.width}px`;
       } else {
@@ -252,12 +261,12 @@ export default {
   },
   updated() {
     if (this.direction === "horizontal") {
-       this.$refs["list-item"].forEach(item => {
-          item.style.width = `${this.itemWidth}px`;
-          item.style.height = `${this.height}px`;
-          item.style.display = 'inline-block';
-          console.log(this.itemWidth);
-       });
+      this.$refs["list-item"].forEach(item => {
+        item.style.width = `${this.itemWidth}px`;
+        item.style.height = `${this.height}px`;
+        item.style.display = "inline-block";
+        console.log(this.itemWidth);
+      });
     } else {
       this.$refs["list-item"].forEach(item => {
         item.style.height = `${this.itemHeight}px`;

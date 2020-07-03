@@ -26,6 +26,16 @@ Vue.use(VueRouter)
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "docs" */ '../views/Docs.vue')
   },
+  {
+    path: '/horizontal',
+    name: 'Horizontal',
+    component: () => import(/* webpackChunkName: "horizontal" */ '../views/horizontal.vue')
+  },
+  {
+    path: '/vertical',
+    name: 'Vertical',
+    component: () => import(/* webpackChunkName: "vertical" */ '../views/vertical.vue')
+  },
 ]
 
 const router = new VueRouter({

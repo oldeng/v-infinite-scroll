@@ -2,7 +2,7 @@
   <div id="app">
     <div id="nav">
       <router-link to="/">预览</router-link> |
-      <router-link to="/about">学习</router-link> |
+      <router-link to="/about">实验</router-link> |
       <router-link to="/docs">文档</router-link>
     </div>
     <router-view/>

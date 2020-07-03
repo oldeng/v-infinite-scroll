@@ -2,8 +2,21 @@
   <div class="demo">
     <button v-on:click="start">{{switchName}}</button>
     <p>垂直无限滚动列表</p>
-    <div class="title-text">
-      <marquee   behavior="" direction="left">旅客朋友注意了，由广州南开发长沙的G3804次列车即将开始检票，请买好G3884次列出的朋友抓紧时间检票上册</marquee>
+    <div class="title-horizental-list">
+      <v-infinite-scroll
+        direction="horizontal"
+        ref="h-scroll"
+        :maxCache="55"
+        :isStart="isStart"
+        :col="15"
+      >
+        <template #up="{ up }">
+          <div class="col up" v-for="(col, index) in up">{{col}}</div>
+        </template>
+        <template #down="{ down }">
+          <div class="col down" v-for="(col, index) in down">{{col}}</div>
+        </template>
+      </v-infinite-scroll>
     </div>
     <div class="text-list">
       <div class="vertical-head">
@@ -96,11 +109,25 @@ export default {
   mounted() {
     this.$nextTick(() => {
       setInterval(async () => {
+        console.debug("准备获取数据");
+        if (
+          this.$refs["h-scroll"].cache.length <= this.$refs["h-scroll"].maxCache
+        ) {
+          console.info("缓存没满,可以抓数据");
+          let data = await axios.get("http://localhost:8000/msg").then(res => {
+            return res.data.msg;
+          });
+          this.$refs["h-scroll"].catchData(data);
+        } else {
+          console.info("不缓存数据");
+          console.log(_this);
+        }
+      }, 2000);
+      setInterval(async () => {
         // let data = await fetch(5).then(data => {
         //   return data;
         // }).catch(err => {
         // });
-        debugger;
         if (
           this.$refs["infinite-scroll"].cache.length <=
           this.$refs["infinite-scroll"].maxCache
@@ -122,13 +149,43 @@ export default {
 div {
   box-sizing: border-box;
 }
-.title-text {
-  display: flex; 
+.title-horizental-list {
+  width: 810px;
+  height: 50px;
   border: 1px solid red;
-   width: 810px; 
-   height: 40px;
-   margin: 0 auto;
-   font-size:30px;
+  margin: 0 auto;
+  background: rgba(30, 30, 30);
+  .col {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    color: red;
+    font-size: 30px;
+    border: 1px solid red;
+    // display: table-cell;
+    // text-align: center;
+    // vertical-align: middle;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .up {
+    // background: rgb(35, 151, 12);
+  }
+
+  .down {
+    // background: rgb(146, 6, 240);
+  }
+}
+.title-text {
+  display: flex;
+  border: 1px solid red;
+  width: 810px;
+  height: 40px;
+  margin: 0 auto;
+  font-size: 30px;
 }
 .text-list {
   width: 810px;
