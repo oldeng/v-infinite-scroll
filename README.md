@@ -3,6 +3,7 @@
 ![scroll-preview.gif](https://github.com/oldeng/v-infinite-scroll/blob/master/src/assets/v-infinite-scroll.gif)
 
 
+
 #安装
 
 ```
