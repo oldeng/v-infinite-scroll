@@ -1,6 +1,6 @@
 #预览
-![scroll-preview.gif](https://upload-images.jianshu.io/upload_images/15373994-58182328d0a05d78.gif?imageMogr2/auto-orient/strip)
 
+![scroll-preview.gif](https://github.com/oldeng/v-infinite-scroll/blob/master/src/assets/v-infinite-scroll.gif)
 
 
 #安装
