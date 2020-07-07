@@ -2,12 +2,12 @@
   <div class="v-infinite-scroll">
     <transition-group class="container" name="list-complete" tag="div">
       <div ref="up" key="scroll-up" :class="['scroll-item', 'scroll-up', animateClss]">
-        <div ref="list-item" v-for="row in list" class="list-complete-item">
+        <div ref="list-item" v-for="(row, index) in list" class="list-complete-item" :key="index" :style="rowColor(index)">
           <slot name="up" v-bind:up="row"></slot>
         </div>
       </div>
       <div ref="down" key="scroll-down" :class="['scroll-item', 'scroll-down', animateClss]">
-        <div ref="list-item" v-for="row in listCopy" class="list-complete-item">
+        <div ref="list-item" v-for="(row, index) in listCopy" class="list-complete-item" :key="index" :style="rowColor(index)">
           <slot name="down" v-bind:down="row"></slot>
         </div>
       </div>
@@ -22,7 +22,7 @@ export default {
       list: [],
       listCopy: [],
       cache: [],
-      switch: false
+      switch: false,
     };
   },
   props: {
@@ -49,6 +49,12 @@ export default {
     interval: {
       type: Number,
       default: 1500
+    },
+    stripeColors: {
+      type: Array,
+      default: function () {
+        return ['#081232', '#0B1F4C'];
+      }
     }
   },
   computed: {
@@ -67,10 +73,15 @@ export default {
     this.switch = this.isStart;
   },
   methods: {
+    rowColor (index) {
+      return {
+        'background-color': this.stripeColors[index % 2]
+      }
+    },
     catchData(data) {
       //当缓存数据过小加载数据
       if (!this.inited) {
-        this.init();
+        this.init(data);
       }
       if (this.cache.length <= this.maxCache) {
         this.cache.splice(this.cache.length, data.length, ...data);
@@ -79,7 +90,9 @@ export default {
     start() {
       this.switch = !this.switch;
     },
-    init() {
+    init(data) {
+      this.cache.splice(this.cache.length, data.length, ...data);
+
       if (this.direction === "vertical") {
         if (this.cache.length >= this.row) {
           //修改数据使列表重新渲染
@@ -184,7 +197,12 @@ export default {
       top2 = top2 - this.itemHeight;
 
       if (top1 < -this.height) {
+        up.style.visibility = "hidden";
         up.style.top = `${this.height}px`;
+        //延时执行
+        setTimeout(() => {
+          up.style.visibility = "visible";
+        }, 300)
       } else {
         up.style.top = top1 + "px";
         up.style.visibility = "visible";
@@ -205,7 +223,11 @@ export default {
       }
 
       if (top2 < -this.height) {
+        down.style.visibility = 'hidden';
         down.style.top = `${this.height}px`;
+        setTimeout(() => {
+          down.style.visibility = 'visible';
+        }, 300)
       } else {
         down.style.top = top2 + "px";
         down.style.visibility = "visible";

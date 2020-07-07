@@ -1,6 +1,6 @@
 {
   "name": "@oldeng/v-infinite-scroll",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build --report",
@@ -13,7 +13,7 @@
     "test": "npm run test:unit",
     "vmock": "vue-cli-service vmock"
   },
-  "main": "dist/v-v-infinite-scroll.min.js",
+  "main": "dist/v-infinite-scroll.min.js",
   "dependencies": {
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
